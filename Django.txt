@@ -1,0 +1,245 @@
+cd D:\Struts\Documents\PyWorkSpace\myProject
+D:
+python manage.py runserver
+
+在合适的目录下输入django-admin startproject xxx  创建项目 项目名xxx
+
+tree . /F 看目录层级
+
+D:\Struts\Documents\PyWorkSpace
+└─  project
+    │   manage.py        ---- 一个命令行工具，可以使我们用多种方式对Django项目进行交互
+    │
+    └─  project
+        └─	settings.py ---- 项目配置文件
+        └─	urls.py     ---- 项目的URL声明
+        └─	wsgi.py     ---- 项目wsgi兼容的web服务器入口
+        └─	__init__.py ---- 一个空文件，它告诉Python这个目录应该被看做一个包
+
+基本操作
+│
+└─  设计表结构
+│	└─	班级表结构
+│		└─	表名 		grades
+│			字段
+│			└─	班级名称 gname
+│			└─	成立时间 gdate
+│			└─	男生总数 gboynum
+│			└─	女生总数 ggirlnum
+│			└─	是否删除	isdelete
+│		学生表结构	
+│		└─	表名 		students
+│			字段
+│			└─	学生名称 sname
+│			└─	学生性别 sgender
+│			└─	学生年龄 sage
+│			└─	所属班级	sgrade
+│			└─	是否删除 isdelete
+│
+└─	配置数据库
+│	└─	Django默认使用SQLite
+│	└─	在settings.py中，通过DATABASES选项进行数据库配置
+│	└─	配置MySQL
+│		└─	安装PyMySQL
+│		└─	在__init__.py中 输入 import pymysql     
+│								pymysql.install_as_MySQLdb()
+│		└─  在settings.py中 关联数据库   DATABASES = {
+│									    'default': {
+│									        'ENGINE': 'django.db.backends.mysql',
+│									        'NAME': 'school', // 数据库名
+│									        'USER': 'root', // 用户名
+│									        'PASSWORD': 'root', // 数据库密码
+│									        'HOST': 'localhost', // 服务器IP
+│									        'PORT': '3306', // 数据库端口
+│									    	}
+│										}
+└─  创建应用										
+│	└─  在一个项目中可以创建多个应用，每种应用处理一种业务
+│	└─  进入项目目录： cd D:\Struts\Documents\PyWorkSpace\project
+│	└─  执行： python manage.py startapp myapp, 生成myapp包
+│	└─  myapp目录说明
+│		└─	admin.py   站点配置
+│		└─	models.pys 模型
+│		└─	views.py   视图
+└─ 	激活应用
+│	└─  将应用配置到settings.py文件的INSTALLED_APPS中
+└─ 	定义模型
+│	└─	每个数据库表对应一个模型
+│	└─	在models.py中定义模型
+│		└─	引入： from django.db import models 继承models.Model类
+│		└─	定义模型，模型的属性对应数据库中的字段，ps：不需要定义主键，主键在生成时自动添加，并且自增长
+└─	生成数据库表
+│	└─	生成迁移文件： python manage.py makemigrations 在migrations文件下生成迁移文件0001_initial.py
+│	└─	执行迁移： python manage.py migrate 创建了数据库表
+│	└─	测试数据
+│		└─	进入python shell： python manage.py shell
+│		└─	from myapp.models import Grades, Students
+│		│	from django.utils import timezone
+│		│	from datetime import *
+│		└─	查询所有数据 Grades.objects.all()
+│		└─	添加数据（创建模型类对象）grade = Grades() 为每个属性赋值
+│		└─	把对象存入数据库 grade.save()
+│		└─	查询数据对象 Grades.objects.get(pk = 1) 查询id为1的对象
+│		└─	修改数据： grade.gname = 'newName' 为需要修改的属性重新赋值，然后grade.save（）
+│		└─	删除数据： grade.delete() 物理删除，数据库表中数据相应删除
+│		└─	关联对象
+│			└─	获取某个班级的所有学生： grade1.students_set.all() 类名.关联的类名小写_set.all()
+│			└─	直接创建某个班级的学生： student3 = grade1.students_set.create(sname = u'曾志伟', sgender = True, sage = 52, scontend = u'我叫曾志伟') PS:不需要save（）
+└─	启动服务器
+│	└─	格式	
+│	│	└─	python manage.py runserver ip:port
+│	│	└─	ip默认代表本机ip，端口号默认8000
+│	└─	说明
+│		└─	这是一个python写的轻量级服务器，仅用于开发测试
+└─	Admin站点管理
+│	└─	概述
+│	│	└─	内容发布
+│	│	└─	公告访问
+│	└─	配置Admin应用
+│	│	└─	在settings.py的INSTALLED_APPS中添加django.contrib.admin（默认被添加进去）
+│	│	└─	创建管理员用户：python manage.py createsuperuser ，然后输入用户名，邮箱，密码	    
+│	│	└─	登陆：http://127.0.0.1:8000/admin/
+│	│	└─	汉化：在roject\settings.py中作如下设定：LANGUAGE_CODE = 'zh-hans' TIME_ZONE = 'Asia/Shanghai'
+│	│ 	管理数据表：
+│	└─ 	└─	修改 myAPP\admin.py 如下：
+│	│       from django.contrib import admin
+│	│  		# Register your models here.
+│	│ 		from .models import Grades, Students
+│	│ 		# 注册
+│	│ 		admin.site.register(Grades)
+│	│  		admin.site.register(Students)
+│	│		注意，自定义的管理在注册时也要添加进去dmin.site.register(Grades，GradeAdmin)
+│	└─ 	自定义管理页面：
+│	│	└─ 	属性说明
+│	│	│	└─ 	# 列表页属性
+│	│   │  		list_display = [] # 显示字段设置
+│	│   │  		list_filter = [] # 过滤字段设置
+│	│   │  		search_fields = [] # 搜索字段设置
+│	│   │  		list_per_page = [] # 分页设置
+│	│   │  		# 添加，修改页属性
+│	│   │  		fields = [] # 规定属性的先后顺序
+│	│   │  		fieldsets = [] # 给属性分组 注意：fields与fieldsets不能同时使用
+│	│   └─	属性示例：
+│	│   │ 	└─	# 列表页属性
+│	│	│		class GradeAdmin(admin.ModelAdmin): # 继承admin.ModelAdmin
+│	│   │			list_display = ['pk', 'gname', 'gdate', 'ggirlnum', 'gboynum', 'isdelete']
+│	│   │			list_filter = ['gname']
+│	│   │			search_fields = ['gname']
+│	│   │			list_per_page = 5
+│	│   │			# 添加，修改页属性
+│	│   │			# fields = ['ggirlnum', 'gboynum', 'gname', 'gdate', 'isdelete']
+│	│   │			fieldsets = [
+│	│   │			 	("num",{"fields":['ggirlnum', 'gboynum']}),
+│	│   │ 				("base", {"fields":["gname", "gdate", "isdelete"]}),
+│	│   │ 			]
+│	│	└─	关联对象
+│	│	│	└─	需求：在创建一个班级时可以直接添加几个学生
+│	│	│		└─	class StudentsInfo(admin.TabularInline):# 可选参数admin.StackedInline
+│	│	│				model = Students
+│	│	│				extra = 2
+│	│	│			class GradesAdmin(admin.ModelAdmin):
+│	│	│				inlines = [StudentsInfo]
+│	│	└─	布尔值显示问题示例：
+│	│	│	└─	def gender(self):
+│   │   │			if self.sgender:
+│   │   │				return '男'
+│   │   │			else:
+│   │   │     			return '女'
+│   │   └─	设置页面列名：gender.short_description = '性别'    列字段名.short_description = 'xxx'
+│	│	└─	执行动作的位置 
+│	│		└─ 	actions_on_top = False
+│	│			actions_on_bottom = True
+│	└─	使用装饰器完成注册：在对应管理类上加上@admin.register(xxx) 例如
+│			@admin.register(Students)
+│			class StudentsAdmin(admin.ModelAdmin):
+│				...step1...
+│          		...step2...
+└─	视图的基本使用
+│	└─	概述
+│	│	└─	在Django中，视图对web请求进行回应，视图是一个python函数，在views.py中定义
+│	└─	定义视图│
+│	│	└─	from django.http import HttpResponse
+│	│		def index(request):
+│   │			return HttpResponse('Hello World')
+│	└─	配置url
+│		└─	path方法，修改project目录下的urls.py文件：
+│       │	from django.contrib import admin
+│       │	from django.urls import path, include
+│       │ 	urlpatterns = [
+│       │		path('admin/', admin.site.urls),
+│       │ 		path('myapp/', include('myapp.urls')),
+│       │	]
+│       │	在myapp应用目录下创建urls.py文件：
+│       │	from django.urls import path
+│       │	from . import views
+│       │ 	urlpatterns = [
+│       │		path('',views.index,name='index'),
+│       │	]
+│       └─	
+└─	模板的基本使用
+│	└─	概述
+│	│	└─	模板是HTML页面，可以根据视图传递过来的数据进行填充
+│	└─	创建模板目录
+│	│	└─	创建templates目录，在目录下创建对应目录(project/templates/myapp)
+│	└─	配置模板路径
+│	│	└─	修改settings.py文件下的TEMPLATES，在DIRS后添加[os.path.join(BASE_DIR, 'templates')]
+│	└─	定义grades.html和students.html
+│		└─	模板语法 
+│			└─	{{输出值，可以使变量，也可以是对象属性}}
+│			└─	{%执行代码段%}
+└─	http://127.0.0.1:8080/grades
+│	└─	写grades模板
+│	│	└─	<!DOCTYPE html>
+│	│		<html lang="en">
+│	│		<head>
+│	│		    <meta charset="UTF-8">
+│	│		    <title>学生信息</title>
+│	│		</head>
+│	│		<body>
+│	│		    <h1>学生信息列表</h1>
+│	│		    <ul>
+│	│		        {%for student in students%}
+│	│		        <li>
+│	│		            <a href="#">{{student.sname}}</a>
+│	│		        </li>
+│	│		        {%endfor%}
+│	│		    </ul>
+│	│		</body>
+│	│		</html>	
+│	└─	定义视图
+│	│	└─	def grades(request):
+│	│	    # 从模型中取数据
+│	│	    gradesList = Grades.objects.all()
+│	│	    # 将数据传递给模板，模板渲染页面，将渲染好的页面返回浏览器
+│	│	    return render(request, 'myapp/grades.html', {'grades': gradesList})	
+│	└─	配置url路径： path('grades/', views.grades, name='grades'),	
+
+
+
+
+Django流程梳理
+    创建工程：执行 django-admin startproject 工程名
+    创建项目：执行 python manage.py startapp 项目名称
+    激活项目：修改 settings.py中的INSTALLED_APPS
+    配置数据库：
+        修改__init__.py文件
+        修改settings.py文件中的DATABASES
+    创建模型类：在项目目录下的models.py文件中创建
+    生成迁移文件：执行python manage.py makemigrations
+    执行迁移：执行python manage.py migrate
+    配置站点：略
+    创建模板目录/项目模板目录
+    在settings.py中的TEMPLATES添加templates路径
+    在工程目录下（project）修改urls.py
+    在项目目录下创建urls.py
+
+
+使用他人Django代码需要的简易修改：
+1.在settings.py中修改数据库名
+2.在settings.py中修改数据库密码
+3.删除由内向外文件（在对应目录里鼠标右键删除）
+4.在数据库中创建对应第一步的数据库(自己在SQL中创建)
+5.执行生成迁移文件
+6.执行迁移
+7.启动服务
+8.浏览器测试
